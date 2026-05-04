@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}My Applications{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>My Applications</h1>
+      <p>Track all your job applications and their status.</p>
+    </div>
+    {% if applications %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Job Title</th>
+            <th>Company</th>
+            <th>Type</th>
+            <th>Match Score</th>
+            <th>Status</th>
+            <th>Interview Date</th>
+            <th>Applied On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr>
+            <td>
+              <a href="{{ url_for('main.job_detail', job_id=app.job_id) }}" style="color:var(--navy); font-weight:600;">{{ app.title }}</a>
+              {% if app.location %}<div style="font-size:.75rem; color:var(--text-muted);">📍 {{ app.location }}</div>{% endif %}
+            </td>
+            <td>
+              <div style="font-weight:500;">{{ app.company_name }}</div>
+            </td>
+            <td><span class="tag tag-type">{{ app.job_type|title }}</span></td>
+            <td>
+              <div class="score-bar"><div class="score-fill" data-score="{{ app.match_score }}"></div></div>
+              <div class="score-text" style="color:{% if app.match_score>=70 %}var(--success){% elif app.match_score>=40 %}var(--warning){% else %}var(--danger){% endif %}">{{ app.match_score }}%</div>
+            </td>
+            <td><span class="badge badge-{{ app.status }}">{{ app.status|title }}</span></td>
+            <td>
+              {% if app.interview_date %}
+              <div class="interview-card" style="padding:.5rem .8rem; font-size:.8rem;">
+                <div class="time">{{ app.interview_date.strftime('%b %d, %Y') if app.interview_date else '' }}</div>
+                <div style="font-size:.72rem;">{{ app.interview_date.strftime('%I:%M %p') if app.interview_date else '' }}</div>
+              </div>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td style="font-size:.78rem; color:var(--text-muted);">{{ app.applied_at.strftime('%b %d, %Y') if app.applied_at else '' }}</td>
+            <td>
+              {% if app.status == 'pending' or app.status == 'reviewed' %}
+              <a href="{{ url_for('messages.messages') }}" class="btn btn-outline btn-sm">Message</a>
+              {% elif app.status == 'interview' %}
+              <span class="badge badge-interview">Scheduled</span>
+              {% elif app.status == 'hired' %}
+              <span class="badge badge-hired">🎉 Hired!</span>
+              {% endif %}
+            </td>
+            <td>
+              <div style="font-weight:500;">{{ app.interview_notes }}</div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <h3>No applications yet</h3>
+      <p class="text-muted">Start applying to jobs that match your skills!</p>
+      <a href="{{ url_for('main.jobs') }}" class="btn btn-gold mt-2">Browse Jobs</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

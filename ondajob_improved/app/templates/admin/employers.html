@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Manage Employers{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>Manage Employers</h1>
+      <p>{{ users|length }} registered employers</p>
+    </div>
+    <form method="get" class="mb-2">
+      <div class="input-group" style="max-width:400px;">
+        <input type="text" name="search" class="form-control" value="{{ search }}" placeholder="Search company or email...">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Email</th>
+            <th>Industry</th>
+            <th>Jobs Posted</th>
+            <th>Registered</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td style="color:var(--text-muted); font-size:.8rem;">{{ u.id }}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:.7rem;">
+                <div style="width:34px; height:34px; background:var(--navy); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--brand); font-weight:700; font-size:.8rem; flex-shrink:0;">
+                  {{ (u.company_name or u.name)[0].upper() }}
+                </div>
+                <div>
+                  <div style="font-weight:600; font-size:.875rem;">{{ u.company_name or u.name }}</div>
+                  <div style="font-size:.72rem; color:var(--text-muted);">{{ u.name }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size:.82rem;">{{ u.email }}</td>
+            <td style="font-size:.82rem;">{{ u.industry or '—' }}</td>
+            <td style="font-weight:600; text-align:center;">{{ u.job_count }}</td>
+            <td style="font-size:.78rem; color:var(--text-muted);">{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '' }}</td>
+            <td><span class="badge badge-{{ 'active' if u.is_active else 'inactive' }}">{{ 'Active' if u.is_active else 'Disabled' }}</span></td>
+            <td>
+              <div class="td-actions">
+                <a href="{{ url_for('messages.conversation', other_id=u.id) }}" class="btn btn-teal btn-sm">✉</a>
+                <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-sm {{ 'btn-danger' if u.is_active else 'btn-success' }}">
+                    {{ 'Disable' if u.is_active else 'Enable' }}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

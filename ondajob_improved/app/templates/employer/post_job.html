@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit Job' if edit else 'Post a Job' }}{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>{{ 'Edit Job Posting' if edit else 'Post a New Job' }}</h1>
+      <p>{{ 'Update the job details below.' if edit else 'Fill in the details to attract the right candidates.' }}</p>
+    </div>
+    <form method="post" action="{{ url_for('employer.edit_job', job_id=job.id) if edit else url_for('employer.post_job') }}">
+      <!-- Basic Info -->
+      <div class="card card-body mb-2">
+        <h3 style="font-size:1rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">📋 Basic Information</h3>
+        <div class="form-group">
+          <label class="form-label">Job Title *</label>
+          <input type="text" name="title" class="form-control" value="{{ job.title if job else '' }}" placeholder="e.g., Senior Python Developer" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-control">
+              <option value="">Select Category</option>
+              {% for cat in ['Technology','Healthcare','Finance','Education','Engineering','Creative','Marketing','Operations','Sales','Customer Service','Legal','Human Resources','Other'] %}
+              <option value="{{ cat }}" {{ 'selected' if job and job.category==cat }}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Job Type *</label>
+            <select name="job_type" class="form-control" required>
+              {% for jt in [('full-time','Full-Time'),('part-time','Part-Time'),('contract','Contract'),('internship','Internship'),('remote','Remote')] %}
+              <option value="{{ jt[0] }}" {{ 'selected' if job and job.job_type==jt[0] }}>{{ jt[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Experience Level</label>
+            <select name="experience_level" class="form-control">
+              <option value="">Any Level</option>
+              {% for lvl in [('entry','Entry Level'),('mid','Mid Level'),('senior','Senior'),('executive','Executive')] %}
+              <option value="{{ lvl[0] }}" {{ 'selected' if job and job.experience_level==lvl[0] }}>{{ lvl[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location *</label>
+            <input type="text" name="location" class="form-control" value="{{ job.location if job else '' }}" placeholder="e.g., Makati City or Remote" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Min Salary (₱/month)</label>
+            <input type="number" name="salary_min" class="form-control" value="{{ job.salary_min if job else '' }}" placeholder="e.g., 30000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Salary (₱/month)</label>
+            <input type="number" name="salary_max" class="form-control" value="{{ job.salary_max if job else '' }}" placeholder="e.g., 60000">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">No. of Slots</label>
+            <input type="number" name="slots" class="form-control" value="{{ job.slots if job else 1 }}" min="1" max="999">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Application Deadline</label>
+            <input type="date" name="deadline" class="form-control" value="{{ job.deadline.strftime('%Y-%m-%d') if job and job.deadline else '' }}">
+          </div>
+        </div>
+        {% if edit %}
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-control">
+            <option value="active" {{ 'selected' if job.status=='active' }}>Active</option>
+            <option value="inactive" {{ 'selected' if job.status=='inactive' }}>Inactive</option>
+            <option value="closed" {{ 'selected' if job.status=='closed' }}>Closed</option>
+          </select>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Skills & Description -->
+      <div class="card card-body mb-2">
+        <h3 style="font-size:1rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">🎯 Skills & Description</h3>
+        <div class="form-group">
+          <label class="form-label">Required Skills <span class="text-muted">(comma-separated)</span></label>
+          <input type="text" name="required_skills" class="form-control" value="{{ job.required_skills if job else '' }}" placeholder="Python, SQL, Django, Communication">
+          <div class="form-hint">These are used for AI resume matching scores.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Description *</label>
+          <textarea name="description" class="form-control" rows="6" placeholder="Describe the role, day-to-day responsibilities, and what makes this opportunity exciting..." required>{{ job.description if job else '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Requirements</label>
+          <textarea name="requirements" class="form-control" rows="4" placeholder="• Bachelor's degree in Computer Science&#10;• 3+ years of experience in Python&#10;• Strong communication skills">{{ job.requirements if job else '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Benefits & Perks</label>
+          <textarea name="benefits" class="form-control" rows="3" placeholder="• HMO from day 1&#10;• 13th month pay&#10;• Remote work option">{{ job.benefits if job else '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:1rem;">
+        <button type="submit" class="btn btn-gold btn-lg">{{ '💾 Update Job' if edit else '🚀 Post Job' }}</button>
+        <a href="{{ url_for('employer.manage_jobs') }}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

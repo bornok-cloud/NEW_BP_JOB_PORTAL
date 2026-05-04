@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Find Your <span>Dream Job</span><br>in the Philippines</h1>
+    <p>Connect with top employers and discover opportunities that match your skills and ambitions.</p>
+    <form action="{{ url_for('main.jobs') }}" method="get">
+      <div class="search-box">
+        <input name="keyword" type="text" placeholder="🔍 Job title, skill, or keyword..." style="flex:2">
+        <div class="divider"></div>
+        <input name="location" type="text" placeholder="📍 City or province">
+        <button type="submit" class="btn btn-gold" style="white-space:nowrap;">Search Jobs</button>
+      </div>
+    </form>
+    <div style="margin-top:1rem; font-size:.82rem; color:rgba(255,255,255,.5);">
+      Popular: <a href="{{ url_for('main.jobs', keyword='developer') }}" style="color:#a5b4fc;">Developer</a> &nbsp;
+      <a href="{{ url_for('main.jobs', keyword='nurse') }}" style="color:#a5b4fc;">Nurse</a> &nbsp;
+      <a href="{{ url_for('main.jobs', keyword='accountant') }}" style="color:#a5b4fc;">Accountant</a> &nbsp;
+      <a href="{{ url_for('main.jobs', keyword='remote') }}" style="color:#a5b4fc;">Remote</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">{{ job_count }}+</div>
+        <div class="label">Active Jobs</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">{{ emp_count }}+</div>
+        <div class="label">Companies</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">{{ js_count }}+</div>
+        <div class="label">Job Seekers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section" style="padding:3rem 2rem; background:#fff;">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div class="section-title">
+      <h2>Browse by Category</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid grid-4 stagger" style="margin-top:2rem;">
+      {% set cats = [
+        ('💻','Technology','/jobs?category=Technology'),
+        ('🏥','Healthcare','/jobs?category=Healthcare'),
+        ('📊','Finance','/jobs?category=Finance'),
+        ('🎓','Education','/jobs?category=Education'),
+        ('🏗️','Engineering','/jobs?category=Engineering'),
+        ('🎨','Creative','/jobs?category=Creative'),
+        ('📦','Operations','/jobs?category=Operations'),
+        ('🌐','Remote Work','/jobs?job_type=remote'),
+      ] %}
+      {% for icon, name, href in cats %}
+      <a href="{{ href }}" class="card card-body text-center" style="display:block; cursor:pointer;">
+        <div style="font-size:2rem; margin-bottom:.5rem;">{{ icon }}</div>
+        <div style="font-weight:600; font-size:.9rem; color:var(--navy);">{{ name }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED JOBS -->
+<section class="section" style="padding:3rem 2rem; background:var(--bg-light);">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div class="flex-between mb-3">
+      <div>
+        <h2 style="font-size:1.6rem;">Featured Jobs</h2>
+        <p class="text-muted">Latest opportunities from top companies</p>
+      </div>
+      <a href="{{ url_for('main.jobs') }}" class="btn btn-outline">View All Jobs →</a>
+    </div>
+    {% if featured_jobs %}
+    <div class="grid grid-3 stagger">
+      {% for job in featured_jobs %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <div class="company-logo">{{ job.company_name[0].upper() }}</div>
+          <div class="job-card-meta">
+            <h3><a href="{{ url_for('main.job_detail', job_id=job.id) }}">{{ job.title }}</a></h3>
+            <div class="company-name">{{ job.company_name }}</div>
+          </div>
+          {% if session.role=='jobseeker' %}
+          <button class="save-btn" data-job-id="{{ job.id }}" title="Save job">☆</button>
+          {% endif %}
+        </div>
+        <div class="job-tags">
+          <span class="tag tag-type">{{ job.job_type|title }}</span>
+          {% if job.location %}<span class="tag tag-location">📍 {{ job.location }}</span>{% endif %}
+          {% if job.salary_min %}<span class="tag tag-salary">₱{{ '{:,.0f}'.format(job.salary_min) }}{% if job.salary_max %}–{{ '{:,.0f}'.format(job.salary_max) }}{% endif %}</span>{% endif %}
+        </div>
+        <div class="job-card-footer">
+          <small class="text-muted">{{ job.created_at.strftime('%b %d, %Y') if job.created_at else '' }}</small>
+          <a href="{{ url_for('main.job_detail', job_id=job.id) }}" class="btn btn-primary btn-sm">View →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="icon">📋</div><h3>No jobs posted yet</h3></div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:#fff; padding:4rem 2rem;">
+  <div style="max-width:1000px; margin:0 auto;">
+    <div class="section-title">
+      <h2>How It Works</h2>
+      <p>Get started in minutes</p>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid grid-3" style="margin-top:2.5rem; text-align:center;">
+      <div>
+        <div style="font-size:3rem; margin-bottom:1rem;">📝</div>
+        <h3 style="font-size:1.1rem; margin-bottom:.5rem;">Create Profile</h3>
+        <p class="text-muted" style="font-size:.9rem;">Sign up and build your professional profile with your skills and experience.</p>
+      </div>
+      <div>
+        <div style="font-size:3rem; margin-bottom:1rem;">🔍</div>
+        <h3 style="font-size:1.1rem; margin-bottom:.5rem;">Find & Apply</h3>
+        <p class="text-muted" style="font-size:.9rem;">Search thousands of jobs and apply with your tailored resume.</p>
+      </div>
+      <div>
+        <div style="font-size:3rem; margin-bottom:1rem;">🎉</div>
+        <h3 style="font-size:1.1rem; margin-bottom:.5rem;">Get Hired</h3>
+        <p class="text-muted" style="font-size:.9rem;">Track your applications and land your dream job.</p>
+      </div>
+    </div>
+    {% if not session.user_id %}
+    <div class="text-center" style="margin-top:2.5rem;">
+      <a href="{{ url_for('auth.signup') }}" class="btn btn-gold btn-lg">Get Started Free →</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

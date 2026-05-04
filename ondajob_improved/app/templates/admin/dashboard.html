@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>Admin Dashboard ⚙</h1>
+      <p>Platform overview and management controls.</p>
+    </div>
+
+    <div class="stats-grid mb-3">
+      <div class="stat-card">
+        <div class="stat-icon navy">👤</div>
+        <div><div class="stat-value">{{ js_count }}</div><div class="stat-label">Job Seekers</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">🏢</div>
+        <div><div class="stat-value">{{ emp_count }}</div><div class="stat-label">Employers</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon teal">📋</div>
+        <div><div class="stat-value">{{ job_count }}</div><div class="stat-label">Active Jobs</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon coral">📄</div>
+        <div><div class="stat-value">{{ app_count }}</div><div class="stat-label">Total Applications</div></div>
+      </div>
+    </div>
+
+    <div class="grid grid-3 gap-2">
+      <!-- Recent Job Seekers -->
+      <div class="card">
+        <div class="card-header">
+          <h3>New Job Seekers</h3>
+          <a href="{{ url_for('admin.jobseekers') }}" style="font-size:.8rem; color:var(--brand);">View all →</a>
+        </div>
+        {% for u in recent_js %}
+        <div style="padding:.7rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.8rem;">
+          <div class="msg-avatar" style="width:32px; height:32px; font-size:.75rem;">{{ u.name[0].upper() }}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ u.name }}</div>
+            <div style="font-size:.72rem; color:var(--text-muted);">{{ u.app_count }} apps</div>
+          </div>
+          <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}">
+            <button type="submit" class="btn btn-sm {{ 'btn-danger' if u.is_active else 'btn-success' }}" style="font-size:.7rem; padding:.2rem .5rem;">
+              {{ 'Disable' if u.is_active else 'Enable' }}
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Recent Employers -->
+      <div class="card">
+        <div class="card-header">
+          <h3>New Employers</h3>
+          <a href="{{ url_for('admin.employers') }}" style="font-size:.8rem; color:var(--brand);">View all →</a>
+        </div>
+        {% for u in recent_emp %}
+        <div style="padding:.7rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.8rem;">
+          <div class="msg-avatar" style="width:32px; height:32px; font-size:.75rem;">{{ u.name[0].upper() }}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ u.company_name or u.name }}</div>
+            <div style="font-size:.72rem; color:var(--text-muted);">{{ u.job_count }} jobs posted</div>
+          </div>
+          <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}">
+            <button type="submit" class="btn btn-sm {{ 'btn-danger' if u.is_active else 'btn-success' }}" style="font-size:.7rem; padding:.2rem .5rem;">
+              {{ 'Disable' if u.is_active else 'Enable' }}
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Recent Jobs -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Jobs</h3>
+          <a href="{{ url_for('admin.jobs') }}" style="font-size:.8rem; color:var(--brand);">View all →</a>
+        </div>
+        {% for job in recent_jobs %}
+        <div style="padding:.7rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.8rem;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ job.title }}</div>
+            <div style="font-size:.72rem; color:var(--text-muted);">{{ job.company_name }} · {{ job.app_count }} apps</div>
+          </div>
+          <span class="badge badge-{{ job.status }}">{{ job.status|title }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

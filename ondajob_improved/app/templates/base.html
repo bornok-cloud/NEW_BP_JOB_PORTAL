@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Home{% endblock %} | ondajob</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text y='.9em' font-size='70' x='15'>💼</text></svg>">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  {% if session.user_id %}
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle sidebar" title="Toggle sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  {% endif %}
+  <a href="{{ url_for('main.index') }}" class="navbar-brand">
+    <span class="brand-on">on</span><span class="brand-da">da</span><span class="brand-job">job</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="{{ url_for('main.index') }}" {% if request.endpoint=='main.index' %}class="active"{% endif %}>Home</a></li>
+    <li><a href="{{ url_for('main.jobs') }}"  {% if request.endpoint=='main.jobs'  %}class="active"{% endif %}>Browse Jobs</a></li>
+    {% if session.role == 'employer' %}
+    <li><a href="{{ url_for('employer.post_job') }}"  {% if request.endpoint=='employer.post_job'  %}class="active"{% endif %}>Post a Job</a></li>
+    <li><a href="{{ url_for('employer.analytics') }}" {% if request.endpoint=='employer.analytics' %}class="active"{% endif %}>Analytics</a></li>
+    {% endif %}
+  </ul>
+  <div class="nav-actions">
+    {% if session.user_id %}
+      <a href="{{ url_for('messages.messages') }}" class="btn btn-nav btn-nav-outline" style="position:relative;">
+        ✉ Messages
+        <span id="msg-badge" class="nav-badge" style="display:none;">0</span>
+      </a>
+      <div class="dropdown">
+        <div class="avatar-btn">{{ session.name[0].upper() }}</div>
+        <div class="dropdown-menu">
+          <div style="padding:.5rem 1.1rem; font-size:.78rem; color:rgba(255,255,255,.4);">{{ session.name }}<br><small style="color:rgba(255,255,255,.3);">{{ session.role|title }}</small></div>
+          <div class="dropdown-divider"></div>
+          {% if session.role == 'admin' %}
+          <a href="{{ url_for('admin.dashboard') }}">⚙ Admin Panel</a>
+          {% elif session.role == 'employer' %}
+          <a href="{{ url_for('employer.dashboard') }}">📊 Dashboard</a>
+          <a href="{{ url_for('employer.profile') }}">🏢 Company Profile</a>
+          <a href="{{ url_for('employer.manage_jobs') }}">📋 My Jobs</a>
+          {% else %}
+          <a href="{{ url_for('jobseeker.dashboard') }}">🏠 Dashboard</a>
+          <a href="{{ url_for('jobseeker.profile') }}">👤 My Profile</a>
+          <a href="{{ url_for('jobseeker.my_applications') }}">📄 Applications</a>
+          <a href="{{ url_for('jobseeker.saved_jobs') }}">⭐ Saved Jobs</a>
+          <a href="{{ url_for('jobseeker.resume_builder') }}">📝 Resume Builder</a>
+          {% endif %}
+          <div class="dropdown-divider"></div>
+          <a href="{{ url_for('auth.logout') }}" style="color:#fca5a5;">🚪 Logout</a>
+        </div>
+      </div>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}"  class="btn btn-nav btn-nav-outline">Login</a>
+      <a href="{{ url_for('auth.signup') }}" class="btn btn-nav btn-nav-primary">Sign Up</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- FLASH MESSAGES -->
+<div style="padding:0 1.5rem; max-width:1200px; margin:0 auto;">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}" style="margin-top:1rem;">
+      {% if cat=='success' %}✅{% elif cat=='danger' %}❌{% elif cat=='warning' %}⚠️{% else %}ℹ️{% endif %}
+      {{ msg }}<button class="alert-close">✕</button>
+    </div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+{% block content %}{% endblock %}
+
+{% block footer %}
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">on<span class="brand-da">da</span><span class="brand-job">job</span></div>
+      <p style="font-size:.85rem; line-height:1.7;">Your trusted platform connecting talented professionals with great employers across the Philippines.</p>
+    </div>
+    <div>
+      <h4>Job Seekers</h4>
+      <ul>
+        <li><a href="{{ url_for('main.jobs') }}">Browse Jobs</a></li>
+        <li><a href="{{ url_for('auth.signup') }}">Create Account</a></li>
+        <li><a href="{{ url_for('jobseeker.resume_builder') if session.role=='jobseeker' else url_for('auth.signup') }}">Resume Builder</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Employers</h4>
+      <ul>
+        <li><a href="{{ url_for('employer.post_job') if session.role=='employer' else url_for('auth.signup') }}">Post a Job</a></li>
+        <li><a href="{{ url_for('auth.signup') }}">Register Company</a></li>
+        <li><a href="{{ url_for('employer.analytics') if session.role=='employer' else url_for('auth.signup') }}">Analytics</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">&copy; 2024 <a href="#">ondajob</a>. All rights reserved. Built with 💛 for Filipino professionals.</div>
+</footer>
+{% endblock %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
