@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>My Profile</h1>
+      <p>Keep your profile updated for better job matches.</p>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 280px; gap:2rem; align-items:start;">
+      <form method="post" enctype="multipart/form-data">
+        <!-- Personal Info -->
+        <div class="card card-body mb-2">
+          <h3 style="font-size:1rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">👤 Personal Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="full_name" class="form-control" value="{{ profile.full_name or '' }}" placeholder="Your full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="text" name="phone" class="form-control" value="{{ profile.phone or '' }}" placeholder="+63 9XX XXX XXXX">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Current Location</label>
+              <input type="text" name="location" class="form-control" value="{{ profile.location or '' }}" placeholder="City, Province">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Preferred Work Location</label>
+              <input type="text" name="preferred_location" class="form-control" value="{{ profile.preferred_location or '' }}" placeholder="City or Remote">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio / Summary</label>
+            <textarea name="bio" class="form-control" rows="3" placeholder="Brief professional summary..." maxlength="500">{{ profile.bio or '' }}</textarea>
+          </div>
+        </div>
+
+        <!-- Professional -->
+        <div class="card card-body mb-2">
+          <h3 style="font-size:1rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">💼 Professional Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Years of Experience</label>
+              <select name="experience_years" class="form-control">
+                {% for y in range(0,21) %}
+                <option value="{{ y }}" {{ 'selected' if profile and profile.experience_years==y }}>{{ y }} year{{ 's' if y!=1 }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Highest Education</label>
+              <input type="text" name="education" class="form-control" value="{{ profile.education or '' }}" placeholder="e.g., BS Computer Science, UP Manila">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Skills <span class="text-muted">(comma-separated)</span></label>
+            <input type="text" name="skills" class="form-control" value="{{ profile.skills or '' }}" placeholder="Python, SQL, Communication, Leadership">
+            <div class="form-hint">These are used to match you with relevant jobs</div>
+          </div>
+        </div>
+
+        <!-- Links -->
+        <div class="card card-body mb-2">
+          <h3 style="font-size:1rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">🔗 Professional Links</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">LinkedIn URL</label>
+              <input type="url" name="linkedin_url" class="form-control" value="{{ profile.linkedin_url or '' }}" placeholder="https://linkedin.com/in/yourname">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GitHub URL</label>
+              <input type="url" name="github_url" class="form-control" value="{{ profile.github_url or '' }}" placeholder="https://github.com/yourname">
+            </div>
+          </div>
+        </div>
+
+        <!-- Resume Upload -->
+        <div class="card card-body mb-2">
+          <h3 style="font-size:1rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">📄 Resume Upload</h3>
+          <div class="upload-zone">
+            <input type="file" name="resume" accept=".pdf" style="display:none;">
+            <div class="upload-icon">📤</div>
+            <p style="color:var(--text-muted); font-size:.875rem; margin-top:.5rem;">Drag & drop your PDF resume or click to browse</p>
+            {% if profile and profile.resume_path %}
+            <p style="color:var(--success); font-size:.8rem; margin-top:.3rem;">✅ Current: {{ profile.resume_path }}</p>
+            {% endif %}
+          </div>
+          <div class="form-hint mt-1">PDF only. Your skills will be auto-extracted from the resume.</div>
+        </div>
+
+        <button type="submit" class="btn btn-gold btn-lg">💾 Save Profile</button>
+      </form>
+
+      <!-- Profile Card Preview -->
+      <div>
+        <div class="card card-body" style="position:sticky; top:80px; text-align:center;">
+          <div style="width:70px; height:70px; background:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--gold); font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; margin:0 auto 1rem;">
+            {{ session.name[0].upper() }}
+          </div>
+          <h3 style="font-size:1rem; margin-bottom:.2rem;">{{ profile.full_name or session.name }}</h3>
+          <p class="text-muted" style="font-size:.8rem;">{{ profile.location or 'Location not set' }}</p>
+          {% if profile and profile.skills %}
+          <div class="job-tags mt-2" style="justify-content:center;">
+            {% for skill in profile.skills.split(',')[:4] %}
+            <span class="tag tag-type" style="font-size:.72rem;">{{ skill.strip() }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--border);">
+            {% if profile and profile.linkedin_url %}
+            <a href="{{ profile.linkedin_url }}" target="_blank" class="btn btn-outline btn-sm btn-block mb-1">🔗 LinkedIn</a>
+            {% endif %}
+            {% if profile and profile.github_url %}
+            <a href="{{ profile.github_url }}" target="_blank" class="btn btn-outline btn-sm btn-block">🐙 GitHub</a>
+            {% endif %}
+          </div>
+          {% if profile and profile.resume_path %}
+          <a href="{{ url_for('static', filename='uploads/resumes/'+profile.resume_path) }}" target="_blank" class="btn btn-teal btn-sm btn-block mt-2">📄 View Resume</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

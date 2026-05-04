@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>Welcome back, {{ session.name.split()[0] }}! 👋</h1>
+      <p>Here's what's happening with your job search.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid mb-3">
+      <div class="stat-card">
+        <div class="stat-icon navy">📄</div>
+        <div><div class="stat-value">{{ app_count }}</div><div class="stat-label">Applications Sent</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">⭐</div>
+        <div><div class="stat-value">{{ saved_count }}</div><div class="stat-label">Saved Jobs</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon teal">📅</div>
+        <div><div class="stat-value">{{ interview_count }}</div><div class="stat-label">Interviews</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon coral">🎯</div>
+        <div><div class="stat-value">{{ '✓' if profile and profile.resume_path else '!' }}</div>
+        <div class="stat-label">Resume {{ 'Uploaded' if profile and profile.resume_path else 'Missing' }}</div></div>
+      </div>
+    </div>
+
+    <!-- Profile completion notice -->
+    {% if not profile or not profile.skills %}
+    <div class="alert alert-warning">
+      ⚠️ Complete your profile to get better job recommendations!
+      <a href="{{ url_for('jobseeker.profile') }}" class="btn btn-sm btn-gold" style="margin-left:1rem;">Complete Profile</a>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-2 gap-2">
+      <!-- Recent Applications -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Applications</h3>
+          <a href="{{ url_for('jobseeker.my_applications') }}" style="font-size:.8rem; color:var(--gold);">View all →</a>
+        </div>
+        {% if recent_apps %}
+        {% for app in recent_apps %}
+        <div style="padding:.9rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1rem;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:.875rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ app.title }}</div>
+            <div style="font-size:.78rem; color:var(--text-muted);">{{ app.company_name }}</div>
+          </div>
+          <div>
+            <span class="badge badge-{{ app.status }}">{{ app.status|title }}</span>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state" style="padding:2rem;">
+          <div class="icon" style="font-size:2rem;">📋</div>
+          <h3 style="font-size:.9rem;">No applications yet</h3>
+          <a href="{{ url_for('main.jobs') }}" class="btn btn-primary btn-sm mt-1">Browse Jobs</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Unread Messages -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Messages</h3>
+          <a href="{{ url_for('messages.messages') }}" style="font-size:.8rem; color:var(--gold);">View all →</a>
+        </div>
+        {% if unread_msgs %}
+        {% for msg in unread_msgs %}
+        <a href="{{ url_for('messages.conversation', other_id=msg.sender_id) }}" class="msg-item">
+          <div class="msg-avatar">{{ msg.sender_name[0].upper() }}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:.875rem;">{{ msg.sender_name }}</div>
+            <div style="font-size:.78rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ msg.content[:60] }}</div>
+          </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state" style="padding:2rem;">
+          <div class="icon" style="font-size:2rem;">✉</div>
+          <h3 style="font-size:.9rem;">No new messages</h3>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recommended Jobs -->
+    {% if recommended %}
+    <div class="mt-3">
+      <div class="flex-between mb-2">
+        <h2 style="font-size:1.2rem;">🎯 Recommended for You</h2>
+        <a href="{{ url_for('main.jobs') }}" style="font-size:.8rem; color:var(--gold);">Browse more →</a>
+      </div>
+      <div class="grid grid-3 stagger">
+        {% for job in recommended %}
+        <div class="job-card">
+          <div class="job-card-header">
+            <div class="company-logo">{{ job.company_name[0].upper() }}</div>
+            <div class="job-card-meta">
+              <h3><a href="{{ url_for('main.job_detail', job_id=job.id) }}">{{ job.title }}</a></h3>
+              <div class="company-name">{{ job.company_name }}</div>
+            </div>
+          </div>
+          <div class="job-tags">
+            <span class="tag tag-type">{{ job.job_type|title }}</span>
+            {% if job.location %}<span class="tag tag-location">📍 {{ job.location }}</span>{% endif %}
+          </div>
+          <a href="{{ url_for('main.job_detail', job_id=job.id) }}" class="btn btn-outline btn-sm">View Job</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

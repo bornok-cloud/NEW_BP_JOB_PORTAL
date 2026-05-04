@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Applicants - {{ job.title }}{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="breadcrumb mb-2">
+      <a href="{{ url_for('employer.manage_jobs') }}">My Jobs</a> / Applicants
+    </div>
+    <div class="flex-between page-header">
+      <div>
+        <h1>{{ job.title }}</h1>
+        <p>{{ applicants|length }} applicant{{ 's' if applicants|length != 1 }} · {{ job.location }}</p>
+      </div>
+      <a href="{{ url_for('employer.edit_job', job_id=job.id) }}" class="btn btn-outline">✏️ Edit Job</a>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+      {% for status_f in ['','pending','reviewed','interview','hired','rejected'] %}
+      <a href="{{ url_for('employer.view_applicants', job_id=job.id, status=status_f) }}"
+         class="btn btn-sm {{ 'btn-primary' if status_filter==status_f else 'btn-outline' }}">
+        {{ 'All' if not status_f else status_f|title }}
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if applicants %}
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      {% for app in applicants %}
+      <div class="card card-body">
+        <div style="display:flex; align-items:flex-start; gap:1.5rem; flex-wrap:wrap;">
+          <!-- Avatar -->
+          <div style="width:52px; height:52px; background:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--gold); font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; flex-shrink:0;">
+            {{ (app.full_name or '?')[0].upper() }}
+          </div>
+          <!-- Info -->
+          <div style="flex:1; min-width:200px;">
+            <div style="display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; margin-bottom:.4rem;">
+              <h3 style="font-size:1rem; margin:0;">{{ app.full_name or 'Unknown' }}</h3>
+              <span class="badge badge-{{ app.status }}">{{ app.status|title }}</span>
+              <div style="margin-left:auto; text-align:right;">
+                <div class="score-bar" style="width:100px;"><div class="score-fill" data-score="{{ app.match_score }}"></div></div>
+                <div class="score-text" style="font-size:.75rem; color:{% if app.match_score>=70 %}var(--success){% elif app.match_score>=40 %}var(--warning){% else %}var(--danger){% endif %};">AI Match: {{ app.match_score }}%</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:1.5rem; flex-wrap:wrap; font-size:.82rem; color:var(--text-muted);">
+              <span>📧 {{ app.email }}</span>
+              {% if app.phone %}<span>📞 {{ app.phone }}</span>{% endif %}
+              {% if app.applicant_location %}<span>📍 {{ app.applicant_location }}</span>{% endif %}
+              {% if app.experience_years is not none %}<span>💼 {{ app.experience_years }} yr exp</span>{% endif %}
+            </div>
+            {% if app.skills %}
+            <div class="job-tags mt-1">
+              {% for skill in app.skills.split(',')[:6] %}
+              <span class="tag tag-type" style="font-size:.72rem;">{{ skill.strip() }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if app.interview_date %}
+            <div class="interview-card mt-2" style="display:inline-block; padding:.5rem 1rem;">
+              <div style="font-size:.75rem;">📅 Interview Scheduled</div>
+              <div class="time" style="font-size:1rem;">{{ app.interview_date.strftime('%b %d, %Y – %I:%M %p') if app.interview_date else '' }}</div>
+              {% if app.interview_notes %}<div style="font-size:.75rem; opacity:.8; margin-top:.2rem;">{{ app.interview_notes }}</div>{% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <!-- Actions -->
+          <div style="display:flex; flex-direction:column; gap:.5rem; flex-shrink:0; min-width:120px;">
+            {% if app.resume_path %}
+            <a href="{{ url_for('static', filename='uploads/resumes/'+app.resume_path) }}" target="_blank" class="btn btn-outline btn-sm">📄 Resume</a>
+            {% endif %}
+            <a href="{{ url_for('messages.conversation', other_id=app.applicant_id) }}" class="btn btn-teal btn-sm">✉ Message</a>
+            <button class="btn btn-primary btn-sm" data-status-btn data-app-id="{{ app.id }}">⚙ Update Status</button>
+          </div>
+        </div>
+        {% if app.cover_letter %}
+        <details style="margin-top:1rem; border-top:1px solid var(--border); padding-top:.8rem;">
+          <summary style="cursor:pointer; font-size:.85rem; font-weight:600; color:var(--navy);">📝 Cover Letter</summary>
+          <div style="margin-top:.8rem; font-size:.85rem; color:var(--text-secondary); line-height:1.7; white-space:pre-wrap; padding:.8rem; background:var(--bg-light); border-radius:var(--radius-sm);">{{ app.cover_letter }}</div>
+        </details>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">👥</div>
+      <h3>No applicants {{ 'with status "'+status_filter+'"' if status_filter else 'yet' }}</h3>
+      {% if status_filter %}<a href="{{ url_for('employer.view_applicants', job_id=job.id) }}" class="btn btn-outline mt-2">Clear filter</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Update Application Status</h3>
+      <button class="modal-close" onclick="closeModal('status-modal')">✕</button>
+    </div>
+    <form method="post" id="status-form">
+      <div class="form-group">
+        <label class="form-label">New Status</label>
+        <select name="status" id="status-select" class="form-control">
+          {% for s in ['pending','reviewed','interview','hired','rejected'] %}
+          <option value="{{ s }}">{{ s|title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="interview-fields" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Interview Date & Time</label>
+          <input type="datetime-local" name="interview_date" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interview Notes / Location</label>
+          <textarea name="interview_notes" class="form-control" rows="2" placeholder="e.g., Zoom meeting, link will be sent via email"></textarea>
+        </div>
+      </div>
+      <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+        <button type="submit" class="btn btn-gold" style="flex:1;">Save Status</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('status-modal')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

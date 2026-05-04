@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Saved Jobs{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>Saved Jobs ⭐</h1>
+      <p>Jobs you've bookmarked for later.</p>
+    </div>
+    {% if jobs %}
+    <div class="grid grid-auto stagger">
+      {% for job in jobs %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <div class="company-logo">{{ job.company_name[0].upper() }}</div>
+          <div class="job-card-meta">
+            <h3><a href="{{ url_for('main.job_detail', job_id=job.id) }}">{{ job.title }}</a></h3>
+            <div class="company-name">{{ job.company_name }}</div>
+          </div>
+          <button class="save-btn saved" data-job-id="{{ job.id }}" title="Remove">★</button>
+        </div>
+        <div class="job-tags">
+          <span class="tag tag-type">{{ job.job_type|title }}</span>
+          {% if job.location %}<span class="tag tag-location">📍 {{ job.location }}</span>{% endif %}
+          {% if job.salary_min %}<span class="tag tag-salary">₱{{ '{:,.0f}'.format(job.salary_min) }}</span>{% endif %}
+        </div>
+        <div class="job-card-footer">
+          <small class="text-muted">{{ job.deadline.strftime('Deadline: %b %d') if job.deadline else 'No deadline' }}</small>
+          <a href="{{ url_for('jobseeker.apply_job', job_id=job.id) }}" class="btn btn-gold btn-sm">Apply Now</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">⭐</div>
+      <h3>No saved jobs yet</h3>
+      <p class="text-muted">Click the ☆ icon on any job to save it here.</p>
+      <a href="{{ url_for('main.jobs') }}" class="btn btn-gold mt-2">Browse Jobs</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

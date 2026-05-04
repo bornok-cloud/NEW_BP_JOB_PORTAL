@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Resume Builder{% endblock %}
+{% block content %}
+<div class="layout">
+  {% include 'shared/sidebar.html' %}  <div class="main-content">
+    <div class="page-header">
+      <h1>Resume Builder</h1>
+      <p>Build a professional resume — auto-saved to your profile.</p>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:start;">
+      <!-- Editor -->
+      <div>
+        <form method="post">
+          <div class="card card-body mb-2">
+            <h3 style="font-size:1rem; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">🎯 Career Objective</h3>
+            <textarea id="field-objective" name="objective" class="form-control" rows="3" maxlength="500" placeholder="Describe your career goals and what value you bring...">{{ resume_data.get('objective','') }}</textarea>
+          </div>
+          <div class="card card-body mb-2">
+            <h3 style="font-size:1rem; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">💼 Work Experience</h3>
+            <textarea id="field-work_experience" name="work_experience" class="form-control" rows="5" maxlength="2000" placeholder="Company Name — Job Title (Year – Year)&#10;• Achievement 1&#10;• Achievement 2">{{ resume_data.get('work_experience','') }}</textarea>
+          </div>
+          <div class="card card-body mb-2">
+            <h3 style="font-size:1rem; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">🎓 Education</h3>
+            <textarea id="field-education" name="education" class="form-control" rows="3" maxlength="500" placeholder="Degree — University (Year)&#10;Relevant coursework or honors">{{ resume_data.get('education','') }}</textarea>
+          </div>
+          <div class="card card-body mb-2">
+            <h3 style="font-size:1rem; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">⚡ Skills</h3>
+            <textarea id="field-skills" name="skills" class="form-control" rows="2" maxlength="300" placeholder="Python, SQL, Communication, Leadership, Adobe Photoshop">{{ resume_data.get('skills','') or (profile.skills if profile else '') }}</textarea>
+          </div>
+          <div class="card card-body mb-2">
+            <h3 style="font-size:1rem; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">🏆 Certifications</h3>
+            <textarea id="field-certifications" name="certifications" class="form-control" rows="2" maxlength="500" placeholder="AWS Certified Developer (2023)&#10;Google Analytics Certification">{{ resume_data.get('certifications','') }}</textarea>
+          </div>
+          <div class="card card-body mb-2">
+            <h3 style="font-size:1rem; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">🌏 Languages</h3>
+            <textarea id="field-languages" name="languages" class="form-control" rows="2" maxlength="200" placeholder="Filipino (Native), English (Fluent)">{{ resume_data.get('languages','') }}</textarea>
+          </div>
+          <div style="display:flex; gap:1rem;">
+            <button type="submit" class="btn btn-gold btn-lg" style="flex:1;">💾 Save Resume</button>
+            <button type="button" id="print-resume" class="btn btn-outline btn-lg">🖨 Print</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Live Preview -->
+      <div style="position:sticky; top:80px;">
+        <div class="card-header" style="background:var(--navy); border-radius:var(--radius) var(--radius) 0 0; border:none;">
+          <h3 style="color:var(--gold); margin:0;">Live Preview</h3>
+          <span style="font-size:.75rem; color:rgba(255,255,255,.5);">Updates as you type</span>
+        </div>
+        <div class="resume-preview" id="resume-preview" style="border-top:none; border-radius:0 0 var(--radius) var(--radius);">
+          <div style="text-align:center; border-bottom:2px solid var(--gold); padding-bottom:1rem; margin-bottom:1rem;">
+            <h2 style="font-size:1.3rem; border:none; padding:0; margin-bottom:.2rem;">{{ profile.full_name or session.name }}</h2>
+            <p style="color:var(--text-muted); font-size:.85rem;">
+              {{ profile.phone or '' }}{% if profile.phone and profile.location %} · {% endif %}{{ profile.location or '' }}
+            </p>
+            {% if profile.linkedin_url %}
+            <p style="font-size:.78rem; color:var(--info);">{{ profile.linkedin_url }}</p>
+            {% endif %}
+          </div>
+          {% if resume_data.get('objective') %}
+          <div class="resume-section">
+            <h3>Career Objective</h3>
+            <p id="preview-objective" style="font-size:.85rem; color:var(--text-secondary); line-height:1.6;">{{ resume_data.get('objective','') }}</p>
+          </div>
+          {% endif %}
+          {% if resume_data.get('work_experience') %}
+          <div class="resume-section">
+            <h3>Work Experience</h3>
+            <pre id="preview-work_experience" style="font-size:.82rem; color:var(--text-secondary); white-space:pre-wrap; font-family:'DM Sans',sans-serif; line-height:1.6;">{{ resume_data.get('work_experience','') }}</pre>
+          </div>
+          {% endif %}
+          {% if resume_data.get('education') or profile.education %}
+          <div class="resume-section">
+            <h3>Education</h3>
+            <pre id="preview-education" style="font-size:.82rem; color:var(--text-secondary); white-space:pre-wrap; font-family:'DM Sans',sans-serif; line-height:1.6;">{{ resume_data.get('education','') or profile.education }}</pre>
+          </div>
+          {% endif %}
+          {% if resume_data.get('skills') or profile.skills %}
+          <div class="resume-section">
+            <h3>Skills</h3>
+            <p id="preview-skills" style="font-size:.85rem; color:var(--text-secondary);">{{ resume_data.get('skills','') or profile.skills }}</p>
+          </div>
+          {% endif %}
+          {% if resume_data.get('certifications') %}
+          <div class="resume-section">
+            <h3>Certifications</h3>
+            <pre id="preview-certifications" style="font-size:.82rem; color:var(--text-secondary); white-space:pre-wrap; font-family:'DM Sans',sans-serif;">{{ resume_data.get('certifications','') }}</pre>
+          </div>
+          {% endif %}
+          {% if resume_data.get('languages') %}
+          <div class="resume-section">
+            <h3>Languages</h3>
+            <p id="preview-languages" style="font-size:.85rem; color:var(--text-secondary);">{{ resume_data.get('languages','') }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

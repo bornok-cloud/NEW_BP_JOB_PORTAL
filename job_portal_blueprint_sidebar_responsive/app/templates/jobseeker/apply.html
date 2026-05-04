@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Apply - {{ job.title }}{% endblock %}
+{% block content %}
+<div style="max-width:800px; margin:0 auto; padding:2rem;">
+  <div class="breadcrumb mb-2">
+    <a href="{{ url_for('main.jobs') }}">Jobs</a> / <a href="{{ url_for('main.job_detail', job_id=job.id) }}">{{ job.title }}</a> / Apply
+  </div>
+  <div class="card card-body mb-2" style="background:linear-gradient(135deg,var(--navy),var(--navy-2)); color:#fff; border:none;">
+    <div style="display:flex; align-items:center; gap:1.2rem;">
+      <div class="company-logo" style="background:rgba(201,168,76,.2); color:var(--gold); width:60px; height:60px;">{{ job.employer_id }}</div>
+      <div>
+        <h2 style="color:#fff; font-size:1.3rem; margin-bottom:.2rem;">{{ job.title }}</h2>
+        <p style="color:rgba(255,255,255,.7); margin:0;">{{ job.location or 'Location not specified' }} · {{ job.job_type|title }}</p>
+      </div>
+    </div>
+  </div>
+
+  {% if profile and profile.resume_path %}
+  <div class="alert alert-success">✅ Your resume is uploaded and will be attached automatically.</div>
+  {% else %}
+  <div class="alert alert-warning">⚠️ No resume found. <a href="{{ url_for('jobseeker.profile') }}">Upload your resume</a> to improve your match score.</div>
+  {% endif %}
+
+  <div class="card card-body">
+    <h2 style="font-size:1.1rem; margin-bottom:1.5rem;">Submit Your Application</h2>
+    <form method="post">
+      <!-- Profile Summary -->
+      {% if profile %}
+      <div style="background:var(--bg-light); border-radius:var(--radius); padding:1.2rem; margin-bottom:1.5rem;">
+        <div style="font-size:.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:.8rem;">📋 Applying with Profile:</div>
+        <div class="grid grid-2 gap-1" style="font-size:.85rem;">
+          <div><span class="text-muted">Name:</span> {{ profile.full_name or session.name }}</div>
+          <div><span class="text-muted">Experience:</span> {{ profile.experience_years or 0 }} years</div>
+          <div><span class="text-muted">Location:</span> {{ profile.location or '—' }}</div>
+          <div><span class="text-muted">Education:</span> {{ profile.education or '—' }}</div>
+        </div>
+        {% if profile.skills %}
+        <div style="margin-top:.8rem;">
+          <span class="text-muted" style="font-size:.85rem;">Skills:</span>
+          <div class="job-tags mt-1">
+            {% for skill in profile.skills.split(',')[:6] %}
+            <span class="tag tag-type">{{ skill.strip() }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label">Cover Letter <span class="text-muted">(optional but recommended)</span></label>
+        <textarea name="cover_letter" class="form-control" rows="8" maxlength="2000"
+                  placeholder="Dear Hiring Manager,
+
+I am excited to apply for the {{ job.title }} position. My experience in [relevant field] makes me a strong candidate because...
+
+Tell the employer why you're the best fit for this role."></textarea>
+        <div class="form-hint">A personalized cover letter significantly improves your chances.</div>
+      </div>
+
+      {% if job.required_skills %}
+      <div style="background:rgba(201,168,76,.06); border:1px solid rgba(201,168,76,.2); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.2rem;">
+        <div style="font-size:.85rem; font-weight:600; color:var(--navy); margin-bottom:.5rem;">📌 Required Skills for this role:</div>
+        <div class="job-tags">
+          {% for skill in job.required_skills.split(',') %}
+          <span class="tag" style="background:rgba(201,168,76,.1); color:#8a6d1e;">{{ skill.strip() }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="display:flex; gap:1rem;">
+        <button type="submit" class="btn btn-gold btn-lg" style="flex:1;">🚀 Submit Application</button>
+        <a href="{{ url_for('main.job_detail', job_id=job.id) }}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

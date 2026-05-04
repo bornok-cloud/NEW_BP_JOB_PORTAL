@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div style="min-height:calc(100vh - 66px); display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 60%,#1a3a5c 100%); padding:2rem;">
+  <div style="background:#fff; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:100%; max-width:460px; padding:2.5rem;" class="fade-in">
+    <div class="text-center mb-3">
+      <div style="font-size:2.5rem;">🚀</div>
+      <h2 style="margin-bottom:.3rem;">Create Account</h2>
+      <p class="text-muted">Join thousands of professionals on JobPortal</p>
+    </div>
+    <!-- Role toggle -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:1.5rem;" id="role-toggle">
+      <label class="role-option" id="role-js" style="border:2px solid var(--gold); border-radius:12px; padding:1rem; text-align:center; cursor:pointer; background:rgba(201,168,76,.08);">
+        <input type="radio" name="role_choose" value="jobseeker" checked style="display:none;">
+        <div style="font-size:1.5rem;">👤</div>
+        <div style="font-weight:600; font-size:.9rem; margin-top:.3rem;">Job Seeker</div>
+        <div style="font-size:.75rem; color:var(--text-muted);">Find your dream job</div>
+      </label>
+      <label class="role-option" id="role-emp" style="border:2px solid var(--border); border-radius:12px; padding:1rem; text-align:center; cursor:pointer;">
+        <input type="radio" name="role_choose" value="employer" style="display:none;">
+        <div style="font-size:1.5rem;">🏢</div>
+        <div style="font-weight:600; font-size:.9rem; margin-top:.3rem;">Employer</div>
+        <div style="font-size:.75rem; color:var(--text-muted);">Hire great talent</div>
+      </label>
+    </div>
+    <form method="post" id="signup-form">
+      <input type="hidden" name="role" id="role-value" value="jobseeker">
+      <div class="form-group">
+        <label class="form-label" id="name-label">Full Name</label>
+        <input type="text" name="name" class="form-control" placeholder="Your full name" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="you@email.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Min. 8 characters" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-gold btn-block btn-lg" style="margin-top:.5rem;">Create Account →</button>
+    </form>
+    <p class="text-center mt-2" style="font-size:.9rem; color:var(--text-muted);">
+      Already have an account? <a href="{{ url_for('auth.login') }}" style="color:var(--gold); font-weight:600;">Sign in</a>
+    </p>
+  </div>
+</div>
+<script>
+  const roles = document.querySelectorAll('.role-option');
+  roles.forEach(r => {
+    r.addEventListener('click', function() {
+      const val = this.querySelector('input').value;
+      document.getElementById('role-value').value = val;
+      document.getElementById('name-label').textContent = val==='employer'? 'Company Name' : 'Full Name';
+      roles.forEach(x => { x.style.borderColor='var(--border)'; x.style.background=''; });
+      this.style.borderColor='var(--gold)';
+      this.style.background='rgba(201,168,76,.08)';
+    });
+  });
+</script>
+{% endblock %}
